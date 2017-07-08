@@ -12,3 +12,4 @@ runIOC.sh
 relPaths.sh
 .project
 /install/
+O.*
