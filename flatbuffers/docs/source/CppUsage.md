@@ -200,6 +200,15 @@ pointer type (`my_ptr<T>`), or by specifying `naked` as the type to get `T *`
 pointers. Unlike the smart pointers, naked pointers do not manage memory for
 you, so you'll have to manage their lifecycles manually.
 
+
+# Using different string type.
+
+By default the object tree is built out of `std::string`, but you can
+influence this either globally (using the `--cpp-str-type` argument to
+`flatc`) or per field using the `cpp_str_type` attribute.
+
+The type must support T::c_str() and T::length() as member functions.
+
 ## Reflection (& Resizing)
 
 There is experimental support for reflection in FlatBuffers, allowing you to
@@ -221,6 +230,30 @@ schema, as well as a lot of helper functions.
 
 And example of usage, for the time being, can be found in
 `test.cpp/ReflectionTest()`.
+
+## Mini Reflection
+
+A more limited form of reflection is available for direct inclusion in
+generated code, which doesn't any (binary) schema access at all. It was designed
+to keep the overhead of reflection as low as possible (on the order of 2-6
+bytes per field added to your executable), but doesn't contain all the
+information the (binary) schema contains.
+
+You add this information to your generated code by specifying `--reflect-types`
+(or instead `--reflect-names` if you also want field / enum names).
+
+You can now use this information, for example to print a FlatBuffer to text:
+
+    auto s = flatbuffers::FlatBufferToString(flatbuf, MonsterTypeTable());
+
+`MonsterTypeTable()` is declared in the generated code for each type. The
+string produced is very similar to the JSON produced by the `Parser` based
+text generator.
+
+You'll need `flatbuffers/minireflect.h` for this functionality. In there is also
+a convenient visitor/iterator so you can write your own output / functionality
+based on the mini reflection tables without having to know the FlatBuffers or
+reflection encoding.
 
 ## Storing maps / dictionaries in a FlatBuffer
 
@@ -401,5 +434,23 @@ share instances of FlatBufferBuilder between threads (recommended), or
 manually wrap it in synchronisation primites. There's no automatic way to
 accomplish this, by design, as we feel multithreaded construction
 of a single buffer will be rare, and synchronisation overhead would be costly.
+
+## Advanced union features
+
+The C++ implementation currently supports vectors of unions (i.e. you can
+declare a field as `[T]` where `T` is a union type instead of a table type). It
+also supports structs and strings in unions, besides tables.
+
+For an example of these features, see `tests/union_vector`, and
+`UnionVectorTest` in `test.cpp`.
+
+Since these features haven't been ported to other languages yet, if you
+choose to use them, you won't be able to use these buffers in other languages
+(`flatc` will refuse to compile a schema that uses these features).
+
+These features reduce the amount of "table wrapping" that was previously
+needed to use unions.
+
+To use scalars, simply wrap them in a struct.
 
 <br>
