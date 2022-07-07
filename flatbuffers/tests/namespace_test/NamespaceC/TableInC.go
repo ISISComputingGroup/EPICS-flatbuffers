@@ -4,7 +4,36 @@ package NamespaceC
 
 import (
 	flatbuffers "github.com/google/flatbuffers/go"
+
+	NamespaceA "NamespaceA"
 )
+
+type TableInCT struct {
+	ReferToA1 *NamespaceA.TableInFirstNST
+	ReferToA2 *NamespaceA.SecondTableInAT
+}
+
+func (t *TableInCT) Pack(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	if t == nil { return 0 }
+	referToA1Offset := t.ReferToA1.Pack(builder)
+	referToA2Offset := t.ReferToA2.Pack(builder)
+	TableInCStart(builder)
+	TableInCAddReferToA1(builder, referToA1Offset)
+	TableInCAddReferToA2(builder, referToA2Offset)
+	return TableInCEnd(builder)
+}
+
+func (rcv *TableInC) UnPackTo(t *TableInCT) {
+	t.ReferToA1 = rcv.ReferToA1(nil).UnPack()
+	t.ReferToA2 = rcv.ReferToA2(nil).UnPack()
+}
+
+func (rcv *TableInC) UnPack() *TableInCT {
+	if rcv == nil { return nil }
+	t := &TableInCT{}
+	rcv.UnPackTo(t)
+	return t
+}
 
 type TableInC struct {
 	_tab flatbuffers.Table
@@ -17,6 +46,13 @@ func GetRootAsTableInC(buf []byte, offset flatbuffers.UOffsetT) *TableInC {
 	return x
 }
 
+func GetSizePrefixedRootAsTableInC(buf []byte, offset flatbuffers.UOffsetT) *TableInC {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TableInC{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *TableInC) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -26,12 +62,12 @@ func (rcv *TableInC) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *TableInC) ReferToA1(obj *TableInFirstNS) *TableInFirstNS {
+func (rcv *TableInC) ReferToA1(obj *NamespaceA.TableInFirstNS) *NamespaceA.TableInFirstNS {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(TableInFirstNS)
+			obj = new(NamespaceA.TableInFirstNS)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
@@ -39,12 +75,12 @@ func (rcv *TableInC) ReferToA1(obj *TableInFirstNS) *TableInFirstNS {
 	return nil
 }
 
-func (rcv *TableInC) ReferToA2(obj *SecondTableInA) *SecondTableInA {
+func (rcv *TableInC) ReferToA2(obj *NamespaceA.SecondTableInA) *NamespaceA.SecondTableInA {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(SecondTableInA)
+			obj = new(NamespaceA.SecondTableInA)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj

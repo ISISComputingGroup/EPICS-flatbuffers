@@ -1,16 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.1;netstandard1.4;netstandard2.0</TargetFrameworks>
-    <RootNamespace>FlatBuffers</RootNamespace>
-    <AssemblyName>FlatBuffers</AssemblyName>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <Copyright>Copyright (c) 2015 Google Inc</Copyright>
-    <RepositoryUrl>https://github.com/google/flatbuffers</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/google/flatbuffers/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net46</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.1" />
+  <PropertyGroup Condition="'$(UNSAFE_BYTEBUFFER)' == 'true'">
+    <DefineConstants>$(DefineConstants);UNSAFE_BYTEBUFFER</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BYTEBUFFER_NO_BOUNDS_CHECK)' == 'true'">
+    <DefineConstants>$(DefineConstants);BYTEBUFFER_NO_BOUNDS_CHECK</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ENABLE_SPAN_T)' == 'true'">
+    <DefineConstants>$(DefineConstants);ENABLE_SPAN_T</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="('$(ENABLE_SPAN_T)' == 'true') And (('$(TargetFramework)' == 'netstandard2.0') Or ('$(TargetFramework)' == 'net46'))">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
+
 </Project>
