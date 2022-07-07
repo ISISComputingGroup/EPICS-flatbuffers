@@ -4,7 +4,32 @@ package NamespaceA
 
 import (
 	flatbuffers "github.com/google/flatbuffers/go"
+
+	NamespaceC "NamespaceC"
 )
+
+type SecondTableInAT struct {
+	ReferToC *NamespaceC.TableInCT
+}
+
+func (t *SecondTableInAT) Pack(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	if t == nil { return 0 }
+	referToCOffset := t.ReferToC.Pack(builder)
+	SecondTableInAStart(builder)
+	SecondTableInAAddReferToC(builder, referToCOffset)
+	return SecondTableInAEnd(builder)
+}
+
+func (rcv *SecondTableInA) UnPackTo(t *SecondTableInAT) {
+	t.ReferToC = rcv.ReferToC(nil).UnPack()
+}
+
+func (rcv *SecondTableInA) UnPack() *SecondTableInAT {
+	if rcv == nil { return nil }
+	t := &SecondTableInAT{}
+	rcv.UnPackTo(t)
+	return t
+}
 
 type SecondTableInA struct {
 	_tab flatbuffers.Table
@@ -17,6 +42,13 @@ func GetRootAsSecondTableInA(buf []byte, offset flatbuffers.UOffsetT) *SecondTab
 	return x
 }
 
+func GetSizePrefixedRootAsSecondTableInA(buf []byte, offset flatbuffers.UOffsetT) *SecondTableInA {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &SecondTableInA{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *SecondTableInA) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -26,12 +58,12 @@ func (rcv *SecondTableInA) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *SecondTableInA) ReferToC(obj *TableInC) *TableInC {
+func (rcv *SecondTableInA) ReferToC(obj *NamespaceC.TableInC) *NamespaceC.TableInC {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(TableInC)
+			obj = new(NamespaceC.TableInC)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
